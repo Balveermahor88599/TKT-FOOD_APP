@@ -17,7 +17,7 @@ const useGetMyShop = () => {
         const response = await axios.get(`${serverURL}/api/shop/get-my`, { 
           withCredentials: true 
         });
- console.log(response)
+//  console.log(response)
         if (response.data.success) {
           // Aapka controller 'shop' bhej raha hoga, 'user' nahi
           const shopData = response.data.shop || response.data.data;

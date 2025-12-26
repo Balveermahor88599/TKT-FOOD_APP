@@ -1,72 +1,106 @@
 import Shop from "../models/shop.models.js"; // Shop model import zaroori hai
 import uploadOnCloudinary from "../utils/cloudinary.js";
 
-export const createEditShop = async (req, res) => { 
+// shop.controller.js (Backend)
+
+export const createEditShop = async (req, res) => {
     try {
-        const { name, city, state, address } = req.body;
-        let image;
-        
+        // req.body se ImageUrl bhi nikaalein
+        const { name, city, state, address, ImageUrl } = req.body;
+        const ownerId = req.user?._id || req.user?.id;
+
+        // 1. Image Logic: Priority req.file ko dein, varna body se ImageUrl lein
+        let finalImageUrl = ImageUrl || ""; 
+
         if (req.file) {
             const cloudinaryRes = await uploadOnCloudinary(req.file.path);
-            image = cloudinaryRes.secure_url; // Cloudinary se URL nikaalein
+            if (cloudinaryRes) {
+                finalImageUrl = cloudinaryRes.secure_url;
+            }
         }
 
-        // 1. Pehle check karein ki shop pehle se hai ya nahi
-        let shop = await Shop.findOne({ owner: req.user._id });
+        // 2. Existing Shop dhoondein
+        let shop = await Shop.findOne({ owner: ownerId });
 
         if (!shop) {
-            // 2. Agar nahi hai toh create karein
+            // Nayi shop ke liye agar image nahi hai toh error dein
+            if (!finalImageUrl) {
+                return res.status(400).json({ success: false, message: "Shop image is required" });
+            }
+
             shop = await Shop.create({
                 name,
                 city,
                 state,
                 address,
-                ImageUrl: image,
-                owner: req.user._id
+                ImageUrl: finalImageUrl,
+                owner: ownerId
             });
-        } else { 
-            // 3. Agar hai toh update karein
+        } else {
+            // Update logic: Sirf wahi fields update karein jo aaye hain
+            const updateFields = {
+                name: name || shop.name,
+                city: city || shop.city,
+                state: state || shop.state,
+                address: address || shop.address,
+            };
+
+            if (finalImageUrl) {
+                updateFields.ImageUrl = finalImageUrl;
+            }
+
             shop = await Shop.findByIdAndUpdate(
-                shop._id, 
-                {
-                    name,
-                    city,
-                    state,
-                    address,
-                    ...(image && { ImageUrl: image }) // Agar nayi image hai tabhi update karein
-                },
+                shop._id,
+                { $set: updateFields },
                 { new: true }
             );
         }
-       
-        await shop.populate('owner');
-        return res.status(201).json({ 
-            success: true, 
-            message: "Shop processed successfully", 
-            shop 
+
+        return res.status(200).json({
+            success: true,
+            message: "Shop saved successfully!",
+            shop
         });
-     
+
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: "Error creating/updating shop", error: error.message });
+        console.error("Backend Error:", error);
+        res.status(500).json({ success: false, message: error.message });
     }
-}
+};
+
+
+
+
+// controller/shop.controller.js
+
+// controller/shop.controller.js
 
 export const getShopById = async (req, res) => { 
     try {
-        // req.user._id isAuth middleware se aa raha hai
-        const shop = await Shop.findOne({ owner: req.user._id }).populate("owner items");
-        
-        if (!shop) {
-            // Shop nahi hai toh error nahi, success false bhejein taaki frontend handle kar sake
-            return res.status(200).json({ success: false, message: "No shop found for this owner" });
+        // req.user check karein (isAuth middleware se aa raha hai)
+        // Note: Check karein aapne JWT sign karte waqt 'id' use kiya tha ya '_id'
+        const userId = req.user?.id || req.user?._id; 
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "User ID not found in token" });
         }
 
-        // Shop mil gayi toh success true ke saath bhej dein
-        return res.status(200).json({ success: true, shop });
+        // Shop dhoondein (Bina populate ke pehle check karein)
+        const shop = await Shop.findOne({ owner: userId });
+        
+        if (!shop) {
+            return res.status(200).json({ success: false, message: "No shop found" });
+        }
+
+        // Agar shop mil gayi
+        return res.status(200).json({ 
+            success: true, 
+            shop 
+        });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: "Error fetching shop", error: error.message });
+        console.error("GET SHOP ERROR:", error.message);
+        // Server Error tab aata hai jab code crash hota hai
+        res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 };

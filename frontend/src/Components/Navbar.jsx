@@ -13,7 +13,7 @@ import useGetCity from "../hooks/useGetCity";
 const Navbar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { userData, city } = useSelector((state) => state.user);
+  const { userData, currentCity } = useSelector((state) => state.user);
   useGetCity();
   const { myShopData } = useSelector((state) => state.owner);
 
@@ -62,7 +62,7 @@ const Navbar = () => {
             <div className="hidden lg:flex items-center gap-2 px-4 border-r border-gray-300 min-w-[140px]">
               <FaLocationDot size={16} className="text-[#ff4d2d]" />
               <span className="text-[13px] text-gray-600 font-bold truncate max-w-[100px]">
-                {city || "Locating..."}
+                {currentCity || "Locating..."}
               </span>
             </div>
             <div className="flex items-center gap-3 px-4 w-full">
