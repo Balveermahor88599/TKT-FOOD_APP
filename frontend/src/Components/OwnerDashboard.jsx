@@ -1,54 +1,55 @@
-import React from 'react'
-import Navbar from './Navbar'
+import React from "react";
+import Navbar from "./Navbar";
+import { useSelector } from "react-redux";
+import { FaUtensils } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const OwnerDashboard = () => {
+  const { myShopData } = useSelector((state) => state.owner);
+  const navigate = useNavigate()
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 1. Navbar (Search-bar automatic hide ho jayegi) */}
+    <div className="w-full min-h-screen flex flex-col bg-gray-50">
       <Navbar />
 
-      {/* 2. Main Content Area */}
-      <div className="pt-24 px-6 md:px-12 max-w-7xl mx-auto">
+      {/* Main Container: pt-20 navbar ke liye aur flex-1 screen space bharne ke liye */}
+      <div className="flex-1 flex justify-center items-center pt-20 p-4 sm:p-6">
         
-        {/* Welcome Section */}
-        <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 mb-8">
-          <h1 className="text-3xl font-extrabold text-slate-800">
-            Owner Dashboard
-          </h1>
-          <p className="text-gray-500 mt-2 font-medium">
-            Welcome back! Manage your restaurant menu and track orders.
-          </p>
-        </div>
+        {!myShopData && (
+          <div className="w-full max-w-md bg-white shadow-lg rounded-[2.5rem] p-10 border border-gray-100 hover:shadow-2xl transition-all duration-300">
+            <div className="flex flex-col items-center text-center">
+              
+              {/* Icon Container with soft background */}
+              <div className="w-24 h-24 bg-[#ff4d2d]/10 rounded-full flex items-center justify-center mb-6">
+                <FaUtensils className="text-[#ff4d2d] text-4xl" />
+              </div>
 
-        {/* Example Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-[#ff4d2d] text-white p-6 rounded-2xl shadow-lg">
-            <h3 className="text-lg font-bold opacity-80">Total Menu Items</h3>
-            <p className="text-4xl font-black mt-2">18</p>
+              <h2 className="text-2xl sm:text-3xl font-black text-gray-800">
+                Add Your Restaurant
+              </h2>
+              
+              <p className="text-gray-500 mt-3 font-medium">
+                Create your shop profile to start receiving orders.
+              </p>
+
+              {/* Add Button Placeholder */}
+              <button className="mt-8 w-full bg-[#ff4d2d] text-white font-bold py-4 rounded-2xl shadow-lg shadow-red-200 hover:scale-[1.02] transition-transform" onClick={()=>navigate("/create-edit-shop")}>
+                Get Started
+              </button>
+
+            </div>
           </div>
-          
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-400">Total Orders</h3>
-            <p className="text-4xl font-black text-slate-800 mt-2">124</p>
+        )}
+
+        {myShopData && (
+          <div className="w-full max-w-7xl mx-auto pt-10 px-6">
+            <h1 className="text-3xl font-black text-gray-800 uppercase tracking-tight">
+               {myShopData.name}
+            </h1>
           </div>
-
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-400">Total Revenue</h3>
-            <p className="text-4xl font-black text-slate-800 mt-2">₹42,500</p>
-          </div>
-        </div>
-
-        {/* Yahan hum 'Add Food' wala button aur Table dalenge */}
-        <div className="mt-10 flex justify-between items-center">
-            <h2 className="text-xl font-bold text-slate-700">Manage Menu</h2>
-            <button className="bg-[#ff4d2d] text-white px-6 py-2.5 rounded-xl font-bold hover:scale-105 transition-all shadow-md">
-               + Add New Food
-            </button>
-        </div>
-
+        )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default OwnerDashboard
+export default OwnerDashboard;

@@ -13,6 +13,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { setUserData } from "./redux/userSlice";
 import useGetCity from "./hooks/useGetCity";
 import useGetMyShop from "./hooks/useGetMyShop";
+import CreateEditShop from "./pages/CreateEditShop";
 
 export const serverURL = "http://localhost:8000";
 
@@ -44,6 +45,9 @@ const App = () => {
       <Route path="/signin" element={!userData ? <Signin /> : <Navigate to="/" />} />
       <Route path="/forgot-password" element={!userData ? <ForgotPassword /> : <Navigate to="/" />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
+      <Route path="/create-edit-shop" element={userData?<CreateEditShop/>:<Navigate to={"/signin"}/>} />
+
+
 
       {/* Main Home Route: Yahan se role decide hoga */}
       <Route 

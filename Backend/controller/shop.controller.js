@@ -1,4 +1,4 @@
-import Shop from "../models/shop.model.js"; // Shop model import zaroori hai
+import Shop from "../models/shop.models.js"; // Shop model import zaroori hai
 import uploadOnCloudinary from "../utils/cloudinary.js";
 
 export const createEditShop = async (req, res) => { 
