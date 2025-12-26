@@ -1,8 +1,14 @@
 import React from 'react'
+import Navbar from './Navbar' 
 
 const UserDashboard = () => {
   return (
-    <div>UserDashboard</div>
+    /* Parent div ko hamesha 'w-full' rakhein */
+    <div className="min-h-screen w-full bg-[#fffcfb]">
+      <Navbar />
+      
+      
+    </div>
   )
 }
 
