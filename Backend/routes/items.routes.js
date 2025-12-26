@@ -1,7 +1,7 @@
 import express from 'express';
-import isAuth from '../middlewares/isAuth';
-import { addItem, editItem } from '../controller/items.controller';
-import upload from '../middlewares/multer';
+import isAuth from '../middlewares/isAuth.js';
+import { addItem, editItem } from '../controller/items.controller.js';
+import upload from '../middlewares/multer.js';
 
 
 

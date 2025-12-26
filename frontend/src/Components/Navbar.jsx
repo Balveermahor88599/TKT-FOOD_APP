@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaLocationDot, FaPlus, FaXmark} from "react-icons/fa6";
+import { FaLocationDot, FaPlus, FaXmark } from "react-icons/fa6";
 import { HiOutlineShoppingCart } from "react-icons/hi";
 import { TbReceipt2 } from "react-icons/tb";
 import { FaSearch } from "react-icons/fa";
@@ -15,6 +15,7 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const { userData, city } = useSelector((state) => state.user);
   useGetCity();
+  const { myShopData } = useSelector((state) => state.owner);
 
   const [showInfo, setShowInfo] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -106,31 +107,28 @@ const Navbar = () => {
               </>
             )}
 
-            {/* Owner Specific Button */}
-
+            {/* Owner Specific Section */}
             {userData?.role === "owner" && (
-              <>
-                {" "}
-                {/* 🟢 Fragment start kyunki multiple elements hain */}
-                <button className="flex items-center gap-2 p-2 px-4 cursor-pointer rounded-full bg-[#ff4d2d]/10 text-[#ff4d2d] font-bold text-sm hover:bg-[#ff4d2d]/20 transition-all">
-                  <FaPlus size={18} />
-                  <span className="hidden md:inline">Add food Item</span>
-                </button>
-                <div className="hidden md:flex items-center gap-2 relative px-3 py-1 rounded-lg cursor-pointer text-gray-600 hover:text-[#ff4d2d] transition-colors">
+              <div className="flex items-center gap-3">
+                {/* 1. Add Food Item Button: Sirf tab dikhega jab shop create ho chuki ho */}
+                {myShopData && (
+                  <button className="flex items-center gap-2 p-2 px-4 cursor-pointer rounded-full bg-[#ff4d2d]/10 text-[#ff4d2d] font-bold text-sm hover:bg-[#ff4d2d]/20 transition-all">
+                    <FaPlus size={18} />
+                    <span className="hidden md:inline">Add food Item</span>
+                  </button>
+                )}
+
+                {/* 2. My Orders Icon (Receipt) */}
+                <div className="flex items-center gap-2 relative px-3 py-1 rounded-lg cursor-pointer text-gray-600 hover:text-[#ff4d2d] transition-colors">
                   <TbReceipt2 size={24} />
-                  <span>My order</span>
+                  <span className="hidden md:inline font-bold text-sm">
+                    My order
+                  </span>
                   <span className="absolute -top-1 -right-1 bg-[#ff4d2d] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-bold">
                     0
                   </span>
                 </div>
-                 <div className="md:hidden flex items-center gap-2 relative px-3 py-1 rounded-lg cursor-pointer text-gray-600 hover:text-[#ff4d2d] transition-colors">
-                  <TbReceipt2 size={24} />
-                  
-                  <span className="absolute -top-1 -right-1 bg-[#ff4d2d] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-bold">
-                    0
-                  </span>
-                </div>
-              </> /* 🟢 Fragment close */
+              </div>
             )}
 
             {/* Profile Dropdown */}

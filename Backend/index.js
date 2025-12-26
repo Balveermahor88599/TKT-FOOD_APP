@@ -6,6 +6,8 @@ import cookieParser from "cookie-parser";
 import router from "./routes/auth.routes.js";
 import cors from "cors";
 import userRouter from "./routes/user.routes.js";
+import shopRouter from "./routes/shop.routes.js";
+import itemRouter from "./routes/items.routes.js";
 
 
 const app = express();
@@ -24,6 +26,8 @@ app.use(cookieParser());
 // routes
 app.use("/api/auth", router);
 app.use("/api/user", userRouter);
+app.use("/api/shop", shopRouter);
+app.use("/api/item", itemRouter);
 
 // start server only after DB connection
 const startServer = async () => {

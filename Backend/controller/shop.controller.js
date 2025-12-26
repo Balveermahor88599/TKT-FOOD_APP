@@ -1,68 +1,72 @@
-import uploadOnCloudinary from "../utils/cloudinary";
+import Shop from "../models/shop.model.js"; // Shop model import zaroori hai
+import uploadOnCloudinary from "../utils/cloudinary.js";
 
 export const createEditShop = async (req, res) => { 
     try {
-        const{ name, city, state, address } = req.body;
+        const { name, city, state, address } = req.body;
         let image;
-        if(req.file){
-            image = await uploadOnCloudinary(req.file.path);
+        
+        if (req.file) {
+            const cloudinaryRes = await uploadOnCloudinary(req.file.path);
+            image = cloudinaryRes.secure_url; // Cloudinary se URL nikaalein
         }
-        let show=await Shop.findOne({owner:req.user._id});
-        if(!shop){
+
+        // 1. Pehle check karein ki shop pehle se hai ya nahi
+        let shop = await Shop.findOne({ owner: req.user._id });
+
+        if (!shop) {
+            // 2. Agar nahi hai toh create karein
             shop = await Shop.create({
-            name,
-            city,
-            state,
-            address,
-            ImageUrl: image,
-            owner: req.user._id
-        });
-        }else{ 
-            shop = await Shop.findByIdAndUpdate(shop._id, {
-            name,
-            city,
-            state,
-            address,
-            ImageUrl: image,
-            owner: req.user._id},
-            { new: true });
-            }
+                name,
+                city,
+                state,
+                address,
+                ImageUrl: image,
+                owner: req.user._id
+            });
+        } else { 
+            // 3. Agar hai toh update karein
+            shop = await Shop.findByIdAndUpdate(
+                shop._id, 
+                {
+                    name,
+                    city,
+                    state,
+                    address,
+                    ...(image && { ImageUrl: image }) // Agar nayi image hai tabhi update karein
+                },
+                { new: true }
+            );
+        }
        
         await shop.populate('owner');
-        res.status(201).json({ message: "Shop created successfully" , shop: newShop });
+        return res.status(201).json({ 
+            success: true, 
+            message: "Shop processed successfully", 
+            shop 
+        });
      
     } catch (error) {
-        res.status(500).json({ message: "Error creating/updating shop", error });
+        console.error(error);
+        res.status(500).json({ success: false, message: "Error creating/updating shop", error: error.message });
     }
 }
 
-
 export const getShopById = async (req, res) => { 
     try {
-        const shopId = req.params.id;
-        // Logic to get a shop by ID
-        res.status(200).json({ shop: { id: shopId } });
+        // req.user._id isAuth middleware se aa raha hai
+        const shop = await Shop.findOne({ owner: req.user._id }).populate("owner items");
+        
+        if (!shop) {
+            // Shop nahi hai toh error nahi, success false bhejein taaki frontend handle kar sake
+            return res.status(200).json({ success: false, message: "No shop found for this owner" });
+        }
+
+        // Shop mil gayi toh success true ke saath bhej dein
+        return res.status(200).json({ success: true, shop });
+
     } catch (error) {
-        res.status(500).json({ message: "Error fetching shop", error });
+        console.error(error);
+        res.status(500).json({ success: false, message: "Error fetching shop", error: error.message });
     }
 };
-
-export const updateShop = async (req, res) => { 
-    try {
-        const shopId = req.params.id;
-        // Logic to update a shop by ID
-        res.status(200).json({ message: "Shop updated successfully" });
-    } catch (error) {
-        res.status(500).json({ message: "Error updating shop", error });
-    }
-};
-
-export const deleteShop = async (req, res) => { 
-    try {
-        const shopId = req.params.id;
-        // Logic to delete a shop by ID
-        res.status(200).json({ message: "Shop deleted successfully" });
-    } catch (error) {
-        res.status(500).json({ message: "Error deleting shop", error });
-    }
-};  

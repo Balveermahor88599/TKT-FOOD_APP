@@ -12,6 +12,7 @@ import useGetCurrentUser from "./hooks/useGetCurrentUser";
 import { useSelector, useDispatch } from "react-redux";
 import { setUserData } from "./redux/userSlice";
 import useGetCity from "./hooks/useGetCity";
+import useGetMyShop from "./hooks/useGetMyShop";
 
 export const serverURL = "http://localhost:8000";
 
@@ -19,6 +20,7 @@ const App = () => {
   const dispatch = useDispatch();
   const { user, loading } = useGetCurrentUser(); 
   useGetCity();
+  useGetMyShop();
   const { userData } = useSelector((state) => state.user);
 
   useEffect(() => {
