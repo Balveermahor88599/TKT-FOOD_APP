@@ -102,7 +102,7 @@ const OwnerDashboard = () => {
               <h2 className="text-2xl font-black text-gray-800">Your Menu</h2>
               <button 
                 className="flex items-center gap-2 bg-[#ff4d2d] text-white px-6 py-3 rounded-xl font-bold hover:shadow-lg transition-all active:scale-95 shadow-red-200"
-                onClick={() => navigate("/add-food-item")}
+                onClick={() => navigate("/add-item")}
               >
                 <FaPlus /> Add Item
               </button>

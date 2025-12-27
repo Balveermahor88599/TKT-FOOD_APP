@@ -7,7 +7,7 @@ import router from "./routes/auth.routes.js";
 import cors from "cors";
 import userRouter from "./routes/user.routes.js";
 import shopRouter from "./routes/shop.routes.js";
-import itemRouter from "./routes/items.routes.js";
+import itemRouter from "./routes/item.routes.js";
 
 
 const app = express();
@@ -27,6 +27,17 @@ app.use(cookieParser());
 app.use("/api/auth", router);
 app.use("/api/user", userRouter);
 app.use("/api/shop", shopRouter);
+// app.use("/api/item", itemRouter);
+// index.js (Routes se theek upar)
+// index.js
+app.use((req, res, next) => {
+    console.log("--- New Request ---");
+    console.log("Method:", req.method);
+    console.log("URL:", req.url);
+    console.log("Headers:", req.headers.origin);
+    next();
+});
+
 app.use("/api/item", itemRouter);
 
 // start server only after DB connection
