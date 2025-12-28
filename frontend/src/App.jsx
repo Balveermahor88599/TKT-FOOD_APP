@@ -7,6 +7,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import OwnerDashboard from "./Components/OwnerDashboard";
 import DeliveryBoyDashboard from "./Components/DeliveryBoyDashboard";
+import EditItem from "./pages/EditItem"; // 👈 1. Import EditItem
 
 import useGetCurrentUser from "./hooks/useGetCurrentUser";
 import { useSelector, useDispatch } from "react-redux";
@@ -46,12 +47,18 @@ const App = () => {
       <Route path="/signin" element={!userData ? <Signin /> : <Navigate to="/" />} />
       <Route path="/forgot-password" element={!userData ? <ForgotPassword /> : <Navigate to="/" />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
-      <Route path="/create-edit-shop" element={userData?<CreateEditShop/>:<Navigate to={"/signin"}/>} />
-      <Route path="/add-item" element={userData?<Additem/>:<Navigate to={"/signin"}/>} />
+      
+      {/* Protected Routes (Only for logged in users) */}
+      <Route path="/create-edit-shop" element={userData ? <CreateEditShop /> : <Navigate to="/signin" />} />
+      <Route path="/add-item" element={userData ? <Additem /> : <Navigate to="/signin" />} />
+      
+      {/* 👈 2. Add Edit Item Route with Dynamic ID */}
+      <Route 
+        path="/edit-item/:itemId" 
+        element={userData ? <EditItem /> : <Navigate to="/signin" />} 
+      />
 
-
-
-      {/* Main Home Route: Yahan se role decide hoga */}
+      {/* Main Home Route: Role-based logic */}
       <Route 
         path="/" 
         element={
@@ -67,6 +74,7 @@ const App = () => {
         } 
       />
       
+      {/* Fallback Route */}
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );

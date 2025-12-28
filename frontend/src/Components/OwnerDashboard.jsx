@@ -1,121 +1,167 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useCallback } from "react"; 
 import Navbar from "./Navbar";
 import { useSelector, useDispatch } from "react-redux";
-import { FaUtensils, FaMapMarkerAlt, FaPlus, FaEdit } from "react-icons/fa";
+import { FaUtensils, FaMapMarkerAlt, FaPlus, FaEdit, FaStore } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { serverURL } from "../App";
 import { setMyShopData } from "../redux/ownerSlice";
+import OwnerItemCart from "./OwnerItemCart";
 
 const OwnerDashboard = () => {
   const { myShopData } = useSelector((state) => state.owner);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // 1. Data Persistence Logic: Refresh hone par database se data mangwana
+  const fetchItems = useCallback(async () => {
+    try {
+      const res = await axios.get(`${serverURL}/api/item/get-my-items`, { 
+        withCredentials: true 
+      });
+      if (res.data.success) {
+        setItems(res.data.items);
+      }
+    } catch (error) {
+      console.error("Items fetch error:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const removeItemFromUI = useCallback((id) => {
+    setItems((prevItems) => prevItems.filter((item) => item._id !== id));
+  }, []);
+
   useEffect(() => {
-    const fetchShopData = async () => {
-      try {
-        // Aapka backend route '/get-my' hai, isliye yahan wahi use kiya hai
-        const res = await axios.get(`${serverURL}/api/shop/get-my`, {
-          withCredentials: true,
-        });
-        
-        if (res.data.success) {
-          // Data milte hi Redux mein save karein taaki UI update ho jaye
-          dispatch(setMyShopData(res.data.shop));
+    const initializeData = async () => {
+      if (!myShopData) {
+        try {
+          const res = await axios.get(`${serverURL}/api/shop/get-my`, { 
+            withCredentials: true 
+          });
+          if (res.data.success) {
+            dispatch(setMyShopData(res.data.shop));
+          } else {
+            setLoading(false);
+          }
+        } catch (error) {
+          console.error("Shop fetch error:", error);
+          setLoading(false);
         }
-      } catch (error) {
-        console.error("Error fetching shop data:", error);
+      } 
+      else {
+        fetchItems();
       }
     };
+    initializeData();
+  }, [myShopData, dispatch, fetchItems]); 
 
-    // Agar Redux mein data nahi hai (refresh hone par), tabhi API call karein
-    if (!myShopData) {
-      fetchShopData();
-    }
-  }, [dispatch, myShopData]);
+  if (loading && !myShopData) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-white">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-16 border-4 border-[#ff4d2d] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-[#ff4d2d] font-bold animate-pulse text-lg tracking-widest uppercase">TKT Food Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full min-h-screen flex flex-col bg-gray-50">
+    <div className="w-full min-h-screen flex flex-col bg-[#fafafa]">
       <Navbar />
-
-      <div className="flex-1 pt-24 p-4 sm:p-6 lg:p-10">
-        
-        {/* Scenario 1: Agar Shop nahi mil rahi (Sirf tab dikhega jab data load ho raha ho ya shop na ho) */}
-        {!myShopData && (
+      
+      <div className="flex-1 pt-28 pb-20 p-4 sm:p-6 lg:p-12">
+        {!myShopData ? (
           <div className="flex justify-center items-center h-[70vh]">
-            <div className="w-full max-w-md bg-white shadow-lg rounded-[2.5rem] p-10 border border-gray-100">
-              <div className="flex flex-col items-center text-center">
-                <div className="w-24 h-24 bg-[#ff4d2d]/10 rounded-full flex items-center justify-center mb-6">
-                  <FaUtensils className="text-[#ff4d2d] text-4xl" />
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-black text-gray-800">Add Your Restaurant</h2>
-                <p className="text-gray-500 mt-3 font-medium">Create your shop profile to start receiving orders.</p>
-                <button 
-                  className="mt-8 w-full bg-[#ff4d2d] text-white font-bold py-4 rounded-2xl shadow-lg hover:scale-[1.02] transition-transform shadow-red-100" 
-                  onClick={() => navigate("/create-edit-shop")}
-                >
-                  Get Started
-                </button>
+            <div className="text-center bg-white p-16 rounded-[4rem] shadow-2xl shadow-orange-100 border border-gray-50 max-w-lg">
+              <div className="bg-orange-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8">
+                <FaStore className="text-5xl text-[#ff4d2d]" />
               </div>
+              <h2 className="text-3xl font-black text-gray-900 mb-4 tracking-tight uppercase">Setup Your Shop</h2>
+              <p className="text-gray-500 mb-10 leading-relaxed text-lg font-medium">Bechne ke liye pehle apni dukan setup karein. Isme sirf 2 minute lagenge!</p>
+              <button 
+                onClick={() => navigate("/create-edit-shop")}
+                className="w-full bg-gradient-to-r from-[#ff4d2d] to-[#ff7d2d] text-white py-5 rounded-[2rem] font-black text-xl hover:shadow-2xl hover:scale-105 transition-all active:scale-95 shadow-lg shadow-orange-200"
+              >
+                + Register Shop
+              </button>
             </div>
           </div>
-        )}
-
-        {/* Scenario 2: Shop data mil gaya hai (Restaurant Details dikhayein) */}
-        {myShopData && (
-          <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
+        ) : (
+          <div className="max-w-7xl mx-auto space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000">
             
-            {/* Shop Profile Hero Card */}
-            <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden flex flex-col md:flex-row">
-              <div className="md:w-1/3 h-64 md:h-auto overflow-hidden">
+            {/* Header / Hero Section */}
+            <div className="relative group overflow-hidden bg-white rounded-[3.5rem] shadow-xl shadow-gray-200/50 border border-gray-100 flex flex-col md:flex-row min-h-[350px]">
+              {/* Background Accent */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-orange-50 rounded-full blur-3xl opacity-50 -mr-20 -mt-20"></div>
+
+              <div className="md:w-2/5 h-64 md:h-auto overflow-hidden relative">
                 <img 
-                  src={myShopData.ImageUrl} 
+                  src={myShopData.ImageUrl || "https://via.placeholder.com/600"} 
                   alt={myShopData.name} 
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                 />
+                <div className="absolute inset-0 bg-black/10"></div>
               </div>
-              <div className="p-8 md:w-2/3 flex flex-col justify-center">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h1 className="text-4xl font-black text-gray-800 uppercase tracking-tight mb-2">
-                      {myShopData.name}
-                    </h1>
-                    <div className="flex items-center text-gray-500 gap-2">
-                      <FaMapMarkerAlt className="text-[#ff4d2d]" />
-                      <span className="font-medium">{myShopData.address}, {myShopData.city}</span>
+              
+              <div className="p-10 md:p-14 md:w-3/5 flex flex-col justify-center relative z-10">
+                <button 
+                  onClick={() => navigate("/create-edit-shop")} 
+                  className="absolute top-10 right-10 p-4 bg-gray-50 rounded-2xl text-gray-400 hover:bg-[#ff4d2d] hover:text-white transition-all duration-300 hover:shadow-xl active:scale-90"
+                >
+                  <FaEdit size={22} />
+                </button>
+                
+                <div className="space-y-6">
+                  <span className="bg-orange-100 text-[#ff4d2d] px-6 py-2 rounded-full text-sm font-black uppercase tracking-widest">Store Profile</span>
+                  <h1 className="text-4xl md:text-7xl font-black text-gray-900 uppercase tracking-tighter leading-[0.9]">
+                    {myShopData.name}
+                  </h1>
+                  <div className="flex items-center text-gray-500 gap-3 font-semibold text-lg md:text-xl">
+                    <div className="bg-[#ff4d2d] p-2 rounded-lg">
+                      <FaMapMarkerAlt className="text-white" />
                     </div>
+                    <span>{myShopData.address}, {myShopData.city}</span>
                   </div>
-                  <button 
-                    onClick={() => navigate("/create-edit-shop")}
-                    className="p-3 bg-gray-100 rounded-full text-gray-600 hover:bg-[#ff4d2d] hover:text-white transition-all active:scale-90"
-                  >
-                    <FaEdit size={20} />
-                  </button>
                 </div>
               </div>
             </div>
 
-            {/* Food Items Header */}
-            <div className="flex justify-between items-center px-2">
-              <h2 className="text-2xl font-black text-gray-800">Your Menu</h2>
+            {/* Menu Header Section */}
+            <div className="flex flex-col md:flex-row justify-between items-end md:items-center gap-6 border-b border-gray-200 pb-8 px-4">
+              <div className="space-y-1">
+                <h2 className="text-4xl font-black text-gray-900 tracking-tight">Your Culinary Menu</h2>
+                <p className="text-gray-400 font-bold uppercase text-xs tracking-[0.2em]">Manage your dishes and prices</p>
+              </div>
               <button 
-                className="flex items-center gap-2 bg-[#ff4d2d] text-white px-6 py-3 rounded-xl font-bold hover:shadow-lg transition-all active:scale-95 shadow-red-200"
+                className="w-full md:w-auto flex items-center justify-center gap-4 bg-black text-white px-10 py-5 rounded-[2rem] font-black text-lg hover:bg-[#ff4d2d] transition-all duration-300 shadow-xl shadow-gray-200 hover:shadow-orange-200 active:scale-95 group"
                 onClick={() => navigate("/add-item")}
               >
-                <FaPlus /> Add Item
+                <FaPlus className="group-hover:rotate-180 transition-transform duration-500" /> Create New Dish
               </button>
             </div>
 
-            {/* Menu Items logic */}
-            {!myShopData.items || myShopData.items.length === 0 ? (
-              <div className="bg-white rounded-[2rem] p-16 text-center border-2 border-dashed border-gray-200">
-                <p className="text-gray-400 font-medium italic">Your menu is empty. Start adding delicious items!</p>
+            {/* Items Grid */}
+            {items.length === 0 ? (
+              <div className="bg-white rounded-[4rem] p-32 text-center border-4 border-dashed border-gray-100 group">
+                <div className="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                  <FaUtensils className="text-3xl text-gray-300" />
+                </div>
+                <p className="text-gray-400 text-2xl font-black italic tracking-tight">"A empty menu is a hungry menu."</p>
+                <p className="text-gray-300 mt-2 font-bold uppercase text-sm">Add some delicious dishes now</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                 {/* Map your items here */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
+                 {items.map((item) => (
+                    <OwnerItemCart 
+                      key={item._id} 
+                      item={item} 
+                      removeItemFromUI={removeItemFromUI} 
+                    />
+                 ))}
               </div>
             )}
           </div>
