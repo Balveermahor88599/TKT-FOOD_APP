@@ -102,22 +102,43 @@ export const deleteItem = async (req, res) => {
         const deletedItem = await Item.findByIdAndDelete(itemId);
 
         if (!deletedItem) {
-            return res.status(404).json({ 
-                success: false, 
-                message: "Item nahi mila" 
+            return res.status(404).json({
+                success: false,
+                message: "Item nahi mila"
             });
         }
 
         // 2. Success response bhejye
-        return res.status(200).json({ 
-            success: true, 
-            message: "Item delete ho gaya" 
+        return res.status(200).json({
+            success: true,
+            message: "Item delete ho gaya"
         });
 
     } catch (error) {
-        return res.status(500).json({ 
-            success: false, 
-            message: error.message 
+        return res.status(500).json({
+            success: false,
+            message: error.message
         });
     }
 };
+
+
+export const getItemByCity = async (req, res) => {
+    try {
+        const { city } = req.params
+        if (!city) {
+            return res.status(400).json({ message: "city is required" })
+        }
+        const shops = await Shop.find({
+            city: { $regex: new RegExp(`^${city}$`, "i") }
+        }).populate('items')
+        if (!shops) {
+            return res.status(400).json({ message: "shops not found" })
+        }
+        const shopIds=shops.map((shop)=>shop._id)
+        const items=await Item.find({shop:{$in:shopIds}})
+        return res.status(200).json(items)
+    } catch (error) {
+      console.error("❌ getItemByCity Catch Error:", error.message);
+    }
+}

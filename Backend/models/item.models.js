@@ -19,6 +19,10 @@ const itemSchma = new mongoose.Schema({
         enum: ['Veg', 'Non-Veg'], 
         required: true 
     },
+    rating:{
+      average:{type:Number,default:0},
+      count:{type:Number,default:0}
+    },
     // required: true hata diya kyunki Cloudinary timeout kar raha hai
     image: { type: String }, 
 

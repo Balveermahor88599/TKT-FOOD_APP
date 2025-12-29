@@ -16,6 +16,8 @@ import useGetCity from "./hooks/useGetCity";
 import useGetMyShop from "./hooks/useGetMyShop";
 import CreateEditShop from "./pages/CreateEditShop";
 import Additem from "./pages/Additem";
+import useGetShopByCity from "./hooks/useGetShopByCity";
+import useGetItemByCity from "./hooks/useGetItemByCity";
 
 export const serverURL = "http://localhost:8000";
 
@@ -24,6 +26,8 @@ const App = () => {
   const { user, loading } = useGetCurrentUser(); 
   useGetCity();
   useGetMyShop();
+  useGetShopByCity()
+  useGetItemByCity()
   const { userData } = useSelector((state) => state.user);
 
   useEffect(() => {
