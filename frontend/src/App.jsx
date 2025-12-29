@@ -19,6 +19,7 @@ import Additem from "./pages/Additem";
 import useGetShopByCity from "./hooks/useGetShopByCity";
 import useGetItemByCity from "./hooks/useGetItemByCity";
 import CartPage from "./pages/CartPage";
+import Checkout from "./pages/Checkout";
 
 
 export const serverURL = "http://localhost:8000";
@@ -58,6 +59,7 @@ const App = () => {
       <Route path="/create-edit-shop" element={userData ? <CreateEditShop /> : <Navigate to="/signin" />} />
       <Route path="/add-item" element={userData ? <Additem /> : <Navigate to="/signin" />} />
       <Route path="/cart" element={userData ? <CartPage /> : <Navigate to="/signin" />} />
+      <Route path="/checkout" element={userData ? <Checkout /> : <Navigate to="/signin" />} />
       
       {/* 👈 2. Add Edit Item Route with Dynamic ID */}
       <Route 

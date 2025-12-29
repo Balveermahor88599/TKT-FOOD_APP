@@ -9,7 +9,8 @@ const userSlice = createSlice({
     currentAddress:null,
     shopInMyCity:null,
     itemsInMyCity:null,
-    cartItems:[]
+    cartItems:[],
+    totalAmount:0
   },
   reducers: {
     setUserData: (state, action) => {
@@ -39,6 +40,7 @@ const userSlice = createSlice({
         state.cartItems.push(cartItem)
       }
       // console.log(state.cartItems)
+      state.totalAmount=state.cartItems.reduce((sum,i)=>sum+i.price*i.quantity,0)
     },
     updateQuantity:(state,action)=>{
       const {id,quantity}=action.payload
@@ -46,9 +48,13 @@ const userSlice = createSlice({
       if(item){
         item.quantity=quantity
       }
-
+     state.totalAmount=state.cartItems.reduce((sum,i)=>sum+i.price*i.quantity,0)
     },
-
+    removeCartItem:(state,action)=>{
+      state.cartItems=state.cartItems.filter(i=>i.id!==action.payload)
+      state.totalAmount=state.cartItems.reduce((sum,i)=>sum+i.price*i.quantity,0) 
+      },
+      
     clearUserData: (state) => {
       state.userData = null;
       state.currentCity = "Modinagar"; // Logout par default city set kar di
@@ -56,5 +62,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { setUserData, clearUserData, setCurrentCity, setCurrentState, setCurrentAddress, SetShopInMyCity, setItemsInMyCity, addToCart, updateQuantity} = userSlice.actions;
+export const { setUserData, clearUserData, setCurrentCity, setCurrentState, setCurrentAddress, SetShopInMyCity, setItemsInMyCity, addToCart, updateQuantity, removeCartItem} = userSlice.actions;
 export default userSlice.reducer;
