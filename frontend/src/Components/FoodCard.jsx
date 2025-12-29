@@ -1,14 +1,15 @@
 import React, { useState } from 'react'
 import { FaDrumstickBite, FaMinus, FaPlus, FaRegStar, FaShoppingCart } from 'react-icons/fa'
 import { FaLeaf, FaStar } from 'react-icons/fa6'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { addToCart } from '../redux/userSlice'
 
 const FoodCard = ({data}) => {
     const [quantity,setQuantity]=useState(0)
     const dispatch=useDispatch()
+    const {cartItems}=useSelector(state=>state.user)
     const renderStars=(rating)=>{
-        const stars=[];
+        const stars=[]; 
         for (let i = 1; i <= 5; i++) {
            stars.push(
             (i<=rating)?(<FaStar className='text-yellow-600 text-lg'/>):
@@ -65,11 +66,20 @@ const FoodCard = ({data}) => {
      <button className='px-2 py-1 hover:bg-gray-100 transition'onClick={handleIncrease}>
     <FaPlus size={12}/>   
     </button> 
-    <button className='bg-red-500 text-white px-3 py-2 transition-colors' onClick={()=>dispatch(addToCart({
+    <button className={`${cartItems.some(i=>i.id==data._id)?"bg-gray-800":"bg-[#ff4d2d]"} text-white px-3 py-2 transition-colors` }onClick={()=>{
+        quantity>0?
+        dispatch(addToCart({
+        id:data._id,
+      name:data.name,
+      price:data.price,
+      image:data.image,
+      shop:data.shop,
+      quantity,
+      foodType:data.foodType
     
-    }))}><FaShoppingCart size={15}/></button>
+    })):""}}><FaShoppingCart size={15}/></button>
     </div>
-    </div>
+    </div> 
     </div>
   )
 }

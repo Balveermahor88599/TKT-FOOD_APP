@@ -18,6 +18,8 @@ import CreateEditShop from "./pages/CreateEditShop";
 import Additem from "./pages/Additem";
 import useGetShopByCity from "./hooks/useGetShopByCity";
 import useGetItemByCity from "./hooks/useGetItemByCity";
+import CartPage from "./pages/CartPage";
+
 
 export const serverURL = "http://localhost:8000";
 
@@ -55,12 +57,15 @@ const App = () => {
       {/* Protected Routes (Only for logged in users) */}
       <Route path="/create-edit-shop" element={userData ? <CreateEditShop /> : <Navigate to="/signin" />} />
       <Route path="/add-item" element={userData ? <Additem /> : <Navigate to="/signin" />} />
+      <Route path="/cart" element={userData ? <CartPage /> : <Navigate to="/signin" />} />
       
       {/* 👈 2. Add Edit Item Route with Dynamic ID */}
       <Route 
         path="/edit-item/:itemId" 
         element={userData ? <EditItem /> : <Navigate to="/signin" />} 
       />
+
+
 
       {/* Main Home Route: Role-based logic */}
       <Route 

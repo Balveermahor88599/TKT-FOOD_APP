@@ -13,7 +13,7 @@ import useGetCity from "../hooks/useGetCity";
 const Navbar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { userData, currentCity } = useSelector((state) => state.user);
+  const { userData, currentCity, cartItems } = useSelector((state) => state.user);
   useGetCity();
   const { myShopData } = useSelector((state) => state.owner);
 
@@ -99,13 +99,13 @@ const Navbar = () => {
                   className="relative cursor-pointer"
                   onClick={() => navigate("/cart")}
                 >
-                  <HiOutlineShoppingCart size={28} className="text-gray-700" />
+                  <HiOutlineShoppingCart size={28} className="text-gray-700" onClick={()=>navigate("/cart")}/>
                   <span className="absolute -top-1 -right-1 bg-[#ff4d2d] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-bold">
-                    0
+                    {cartItems.length}
                   </span>
                 </div>
               </>
-            )}
+            )}    
 
             {/* Owner Specific Section */}
             {userData?.role === "owner" && (
