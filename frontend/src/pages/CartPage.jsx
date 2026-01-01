@@ -39,7 +39,7 @@ const CartPage = () => {
             </div>
             <div className="mt-4 flex justify-end">
               <button className="bg-[#ff4d2d] text-white px-6 py-3 rounded-lg text-lg
-              font-medium hover:bg-[#e64526] cursor-pointer transition">Proceed To CheckOut</button>
+              font-medium hover:bg-[#e64526] cursor-pointer transition" onClick={()=>navigate("/checkout")}>Proceed To CheckOut</button>
             </div>
           </> 
         )}
