@@ -5,24 +5,24 @@ const shopOrderItemSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Item"
     },
-    name:String,
+    name: String,
     price: Number,
     quantity: Number
-}, { timeStamps: true })
+}, { timestamps: true }); // Fixed spelling
 
 const shopOrderSchema = new mongoose.Schema({
     shop: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Shop"
     },
-    Owner: {
+    owner: { // Fixed: Capital 'O' to small 'o'
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
     },
-    subTotal: Number,
+    subtotal: Number, // Fixed: Capital 'T' to small 't' to match controller
     shopOrderItems: [shopOrderItemSchema],
 
-}, { timeStamps: true })
+}, { timestamps: true });
 
 const orderSchema = new mongoose.Schema({
     user: {
@@ -42,10 +42,13 @@ const orderSchema = new mongoose.Schema({
     totalAmount: {
         type: Number
     },
-    shopOrders: [shopOrderSchema]
-}, { timestamp: true })
+    shopOrders: [shopOrderSchema],
+    status:{
+        type:String,
+        enum:["pending","preparing","out of delivery","delivered"],
+        default:"pending"
+    }
+}, { timestamps: true }); // Fixed: plural 'timestamps'
 
-
-const Order = mongoose.model("Order",orderSchema)
-
-export default orderSchema;
+const Order = mongoose.model("Order", orderSchema);
+export default Order;

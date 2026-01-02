@@ -20,6 +20,9 @@ import useGetShopByCity from "./hooks/useGetShopByCity";
 import useGetItemByCity from "./hooks/useGetItemByCity";
 import CartPage from "./pages/CartPage";
 import Checkout from "./pages/Checkout";
+import OrderPlaced from "./pages/OrderPlaced";
+import MyOrder from "./pages/MyOrder";
+import useGetMyOrders from "./hooks/useGerMyOrders";
 
 
 export const serverURL = "http://localhost:8000";
@@ -31,6 +34,7 @@ const App = () => {
   useGetMyShop();
   useGetShopByCity()
   useGetItemByCity()
+  useGetMyOrders()
   const { userData } = useSelector((state) => state.user);
 
   useEffect(() => {
@@ -60,6 +64,9 @@ const App = () => {
       <Route path="/add-item" element={userData ? <Additem /> : <Navigate to="/signin" />} />
       <Route path="/cart" element={userData ? <CartPage /> : <Navigate to="/signin" />} />
       <Route path="/checkout" element={userData ? <Checkout /> : <Navigate to="/signin" />} />
+      <Route path="/order-placed" element={userData ? <OrderPlaced /> : <Navigate to="/signin" />} />
+      <Route path="/my-orders" element={userData ? <MyOrder /> : <Navigate to="/signin" />} />
+      
       
       {/* 👈 2. Add Edit Item Route with Dynamic ID */}
       <Route 

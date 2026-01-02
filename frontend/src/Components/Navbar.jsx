@@ -13,9 +13,13 @@ import useGetCity from "../hooks/useGetCity";
 const Navbar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { userData, currentCity, cartItems } = useSelector((state) => state.user);
-  useGetCity();
+  
+  // States from Redux
+  const { userData, currentCity, cartItems} = useSelector((state) => state.user);
   const { myShopData } = useSelector((state) => state.owner);
+  
+  // Custom Hook to get location
+  useGetCity();
 
   const [showInfo, setShowInfo] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -31,46 +35,43 @@ const Navbar = () => {
         navigate("/signin");
       }
     } catch (error) {
-      console.error(
-        "Logout Error:",
-        error.response?.data?.message || error.message
-      );
+      console.error("Logout Error:", error.response?.data?.message || error.message);
     }
   };
 
   return (
-    <div className="w-full h-20 fixed top-0 z-[999] bg-[#fffcfb] shadow-sm flex justify-center">
-      {/* Centered Container */}
+    <div className="w-full h-20 fixed top-0 z-[999] bg-[#fffcfb] shadow-sm flex justify-center border-b border-gray-100">
       <div className="w-full max-w-7xl h-full flex items-center justify-between px-6 md:px-12">
+        
         {/* Brand Logo */}
         {!isSearchOpen && (
           <h1
-            className="text-2xl md:text-3xl font-extrabold text-[#ff4d2d] cursor-pointer shrink-0"
+            className="text-2xl md:text-3xl font-black text-[#ff4d2d] cursor-pointer shrink-0 tracking-tighter italic"
             onClick={() => navigate("/")}
           >
             TKT Food
           </h1>
         )}
 
-        {/* Search Bar (Only for User) */}
+        {/* Search Bar (Only for User Role) */}
         {userData?.role === "user" && (
           <div
             className={`${
               isSearchOpen ? "flex w-full" : "hidden md:flex"
-            } items-center md:w-[45%] h-12 md:h-14 bg-white shadow-md rounded-xl border border-gray-100 overflow-hidden mx-4`}
+            } items-center md:w-[40%] h-12 md:h-14 bg-white shadow-sm rounded-2xl border border-gray-100 overflow-hidden mx-4 px-4 transition-all`}
           >
-            <div className="hidden lg:flex items-center gap-2 px-4 border-r border-gray-300 min-w-[140px]">
-              <FaLocationDot size={16} className="text-[#ff4d2d]" />
-              <span className="text-[13px] text-gray-600 font-bold truncate max-w-[100px]">
+            <div className="hidden lg:flex items-center gap-2 pr-4 border-r border-gray-200 min-w-[120px]">
+              <FaLocationDot size={14} className="text-[#ff4d2d]" />
+              <span className="text-[12px] text-gray-500 font-bold truncate max-w-[80px]">
                 {currentCity || "Locating..."}
               </span>
             </div>
-            <div className="flex items-center gap-3 px-4 w-full">
-              <FaSearch size={18} className="text-[#ff4d2d]" />
+            <div className="flex items-center gap-3 w-full ml-2">
+              <FaSearch size={16} className="text-gray-400" />
               <input
                 type="text"
-                placeholder="search delicious food..."
-                className="w-full outline-none text-sm text-gray-700 bg-transparent"
+                placeholder="Search food, restaurants..."
+                className="w-full outline-none text-sm text-gray-700 bg-transparent font-medium"
                 autoFocus={isSearchOpen}
               />
               {isSearchOpen && (
@@ -83,59 +84,69 @@ const Navbar = () => {
           </div>
         )}
 
-        {/* Right Section */}
+        {/* Right Section (Action Icons) */}
         {!isSearchOpen && (
-          <div className="flex items-center gap-4 md:gap-6 shrink-0">
-            {/* User Specific Icons */}
+          <div className="flex items-center gap-3 md:gap-6 shrink-0">
+            
+            {/* --- CUSTOMER (USER) ICONS --- */}
             {userData?.role === "user" && (
               <>
-                <button
-                  onClick={() => setIsSearchOpen(true)}
-                  className="p-2 md:hidden"
-                >
+                <button onClick={() => setIsSearchOpen(true)} className="p-2 md:hidden">
                   <FaSearch size={20} className="text-gray-600" />
                 </button>
-                <div
-                  className="relative cursor-pointer"
-                  onClick={() => navigate("/cart")}
+
+                {/* My Orders (Customer) */}
+                <div 
+                  className="flex items-center gap-1 cursor-pointer group"
+                  onClick={() => navigate("/my-orders")}
                 >
-                  <HiOutlineShoppingCart size={28} className="text-gray-700" onClick={()=>navigate("/cart")}/>
-                  <span className="absolute -top-1 -right-1 bg-[#ff4d2d] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-bold">
-                    {cartItems.length}
-                  </span>
+                  <TbReceipt2 size={26} className="text-gray-600 group-hover:text-[#ff4d2d] transition-colors" />
+                  <span className="hidden lg:inline font-bold text-xs text-gray-500 group-hover:text-gray-800 uppercase tracking-widest">My Order</span>
+                </div>
+
+                {/* Shopping Cart */} 
+                <div className="relative cursor-pointer group" onClick={() => navigate("/cart")}>
+                  <HiOutlineShoppingCart size={28} className="text-gray-600 group-hover:text-[#ff4d2d] transition-colors" />
+                  {cartItems?.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-[#ff4d2d] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-black animate-bounce">
+                      {cartItems.length}
+                    </span>
+                  )}
                 </div>
               </>
-            )}    
+            )}
 
-            {/* Owner Specific Section */}
+            {/* --- OWNER ICONS --- */}
             {userData?.role === "owner" && (
-              <div className="flex items-center gap-3">
-                {/* 1. Add Food Item Button: Sirf tab dikhega jab shop create ho chuki ho */}
+              <div className="flex items-center gap-3 md:gap-5">
                 {myShopData && (
-                  <button className="flex items-center gap-2 p-2 px-4 cursor-pointer rounded-full bg-[#ff4d2d]/10 text-[#ff4d2d] font-bold text-sm hover:bg-[#ff4d2d]/20 transition-all">
-                    <FaPlus size={18} />
-                    <span className="hidden md:inline">Add food Item</span>
+                  <button 
+                    onClick={() => navigate("/add-item")}
+                    className="flex items-center gap-2 p-2 px-5 rounded-full bg-[#ff4d2d] text-white font-black text-xs hover:bg-[#e64427] transition-all shadow-lg shadow-orange-100"
+                  >
+                    <FaPlus size={14} />
+                    <span className="hidden md:inline">ADD DISH</span>
                   </button>
                 )}
 
-                {/* 2. My Orders Icon (Receipt) */}
-                <div className="flex items-center gap-2 relative px-3 py-1 rounded-lg cursor-pointer text-gray-600 hover:text-[#ff4d2d] transition-colors">
-                  <TbReceipt2 size={24} />
-                  <span className="hidden md:inline font-bold text-sm">
-                    My order
-                  </span>
-                  <span className="absolute -top-1 -right-1 bg-[#ff4d2d] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-bold">
-                    0
+                {/* Shop Incoming Orders */}
+                <div 
+                  className="flex items-center gap-2 relative cursor-pointer group"
+                  onClick={() => navigate("/my-orders")}
+                >
+                  <TbReceipt2 size={26} className="text-gray-600 group-hover:text-[#ff4d2d]" />
+                  <span className="hidden md:inline font-black text-xs text-gray-500 group-hover:text-gray-800 uppercase tracking-widest">
+                    Orders
                   </span>
                 </div>
               </div>
             )}
 
-            {/* Profile Dropdown */}
-            <div className="relative">
+            {/* Profile Section */}
+            <div className="relative ml-2">
               {userData ? (
                 <div
-                  className="w-10 h-10 bg-[#ff4d2d] text-white flex items-center justify-center rounded-full font-bold shadow-md uppercase cursor-pointer"
+                  className="w-10 h-10 bg-gradient-to-br from-[#ff4d2d] to-[#ff7d2d] text-white flex items-center justify-center rounded-2xl font-black shadow-lg shadow-orange-100 uppercase cursor-pointer hover:scale-105 transition-transform"
                   onClick={() => setShowInfo(!showInfo)}
                 >
                   {userData.Fullname.charAt(0)}
@@ -143,35 +154,30 @@ const Navbar = () => {
               ) : (
                 <button
                   onClick={() => navigate("/signin")}
-                  className="text-sm font-bold text-[#ff4d2d] hover:underline"
+                  className="bg-gray-100 text-gray-800 px-6 py-2 rounded-xl text-sm font-black hover:bg-[#ff4d2d] hover:text-white transition-all"
                 >
-                  Login
+                  LOGIN
                 </button>
               )}
 
+              {/* Profile Dropdown */}
               {showInfo && (
                 <>
-                  <div
-                    className="fixed inset-0 z-[-1]"
-                    onClick={() => setShowInfo(false)}
-                  ></div>
-                  <div className="absolute top-14 right-0 w-52 bg-white shadow-2xl rounded-2xl p-4 flex flex-col gap-3 border border-gray-50">
-                    <div className="pb-2 border-b border-gray-100">
-                      <p className="text-[10px] text-gray-400 font-bold uppercase">
-                        Logged in as
-                      </p>
-                      <p className="text-sm font-bold text-gray-800 truncate">
-                        {userData?.Fullname}
-                      </p>
+                  <div className="fixed inset-0 z-[-1]" onClick={() => setShowInfo(false)}></div>
+                  <div className="absolute top-14 right-0 w-56 bg-white shadow-2xl rounded-[1.5rem] p-5 flex flex-col gap-3 border border-gray-50 animate-in fade-in slide-in-from-top-2">
+                    <div className="pb-3 border-b border-gray-100">
+                      <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest mb-1">Account</p>
+                      <p className="text-sm font-black text-gray-800 truncate">{userData?.Fullname}</p>
+                      <p className="text-[10px] text-gray-500 font-bold">{userData?.role.toUpperCase()} MODE</p>
                     </div>
-                    <div className="p-2 hover:bg-gray-50 rounded-lg text-sm font-semibold text-gray-600 cursor-pointer">
+                    <div className="p-2 hover:bg-gray-50 rounded-xl text-sm font-bold text-gray-600 cursor-pointer transition-colors">
                       Profile Settings
                     </div>
                     <div
-                      className="p-2 hover:bg-red-50 rounded-lg text-sm font-bold text-[#ff4d2d] cursor-pointer"
+                      className="p-3 bg-red-50 hover:bg-red-100 rounded-xl text-sm font-black text-[#ff4d2d] cursor-pointer text-center transition-colors"
                       onClick={handleLogout}
                     >
-                      Log Out
+                      LOG OUT
                     </div>
                   </div>
                 </>

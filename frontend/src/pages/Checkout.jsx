@@ -9,6 +9,8 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 
 import { setLocation, setAddress } from '../redux/mapSlice';
+import { addMyOrder, clearCart } from '../redux/userSlice';
+import { serverURL } from '../App';
 
 // Leaflet default icon fix
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -16,6 +18,7 @@ import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 let DefaultIcon = L.icon({ iconUrl: markerIcon, shadowUrl: markerShadow, iconSize: [25, 41], iconAnchor: [12, 41] });
 L.Marker.prototype.options.icon = DefaultIcon;
 
+// Map auto-recenter helper
 const RecenterMap = ({ lat, lng }) => {
   const map = useMap();
   useEffect(() => {
@@ -33,7 +36,7 @@ const CheckoutPage = () => {
 
   // Redux States
   const { location, address } = useSelector(state => state.map);
-  const { cartItems: cart} = useSelector(state => state.user); // Default empty array to prevent map error
+  const { cartItems: cart } = useSelector(state => state.user); 
 
   const defaultPos = [28.9845, 77.3877];
   const currentPos = (location && location.lat && location.lng) ? [location.lat, location.lng] : defaultPos;
@@ -81,20 +84,63 @@ const CheckoutPage = () => {
     } catch (err) { console.error(err); }
   };
 
-  // Safe Calculations
+  // Calculations
   const subtotal = cart?.reduce((acc, item) => acc + ((item.price || 0) * (item.quantity || 1)), 0) || 0;
   const deliveryFee = subtotal > 0 ? 40 : 0;
-  const total = subtotal + deliveryFee;
+  const totalBill = subtotal + deliveryFee;
 
-  const handlePlaceOrder = () => {
+  
+
+  // 4. --- PLACE ORDER LOGIC ---
+  const handlePlaceOrder = async () => {
     if (subtotal === 0) return alert("Aapka cart khali hai!");
+    if (!address) return alert("Kripya delivery address select karein.");
+
     setIsOrdering(true);
-    setTimeout(() => {
-      alert("🎉 Order Placed Successfully!");
+    try {
+      // Summary ke liye data pehle hi prepare kar lete hain
+      // Kyunki clearCart hone ke baad data milna mushkil hota hai
+      const itemsForSummary = [...cart]; 
+      const finalBill = totalBill;
+
+      const orderData = {
+        paymentMethod,
+        deliveryAddress: {
+          text: address,
+          latitude: location.lat,
+          longitude: location.lng
+        },
+        totalAmount: finalBill,
+        cartItems: itemsForSummary
+      };
+
+      const result = await axios.post(`${serverURL}/api/order/place-order`, orderData, { 
+        withCredentials: true 
+      });
+      dispatch(addMyOrder(result.data))
+      if (result.data.success) {
+        // Redux cart khali karein
+        dispatch(clearCart());
+        
+        // OrderPlaced page par summary bhejien
+        navigate("/order-placed", { 
+          state: { 
+              items: itemsForSummary, 
+              total: finalBill 
+          } 
+        });
+      } else {
+        alert("Order Error: " + result.data.message);
+      }
+    } catch (error) {
+      console.error("Order process error:", error);
+      alert(error.response?.data?.message || "Something went wrong. Please try again.");
+    } finally {
       setIsOrdering(false);
-      navigate('/');
-    }, 2000);
+    }
   };
+
+
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8 flex justify-center font-sans">
@@ -172,7 +218,6 @@ const CheckoutPage = () => {
         <section className="bg-white rounded-[2rem] p-6 border-2 border-gray-100">
           <h2 className="text-lg font-bold text-gray-700 mb-4">Order Details</h2>
           <div className="space-y-3 mb-4 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
-            {/* FIX: Use optional chaining and default value */}
             {cart && cart.length > 0 ? (
               cart.map((item, index) => (
                 <div key={index} className="flex justify-between items-center text-sm">
@@ -185,7 +230,7 @@ const CheckoutPage = () => {
                 </div>
               ))
             ) : (
-              <p className="text-gray-400 text-sm italic">Cart is empty...</p>
+              <p className="text-center text-gray-400 italic py-2">Cart is empty</p>
             )}
           </div>
         
@@ -202,7 +247,7 @@ const CheckoutPage = () => {
             </div>
             <div className="flex justify-between items-center pt-4 border-t-2 border-gray-100 mt-2">
               <p className="text-xl font-black text-gray-800">Total Bill</p>
-              <p className="text-3xl font-black text-[#ff4d2d]">₹{total.toFixed(2)}</p>
+              <p className="text-3xl font-black text-[#ff4d2d]">₹{totalBill.toFixed(2)}</p>
             </div>
           </div>
         </section>

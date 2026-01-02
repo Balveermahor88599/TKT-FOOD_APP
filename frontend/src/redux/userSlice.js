@@ -1,16 +1,19 @@
 import { createSlice } from "@reduxjs/toolkit";
+// import { set } from "mongoose";
 
 const userSlice = createSlice({
   name: "user",
   initialState: {
     userData: null,
-    currentCity: "Locating...", // Default loading state
+    currentCity: "Locating...", 
     currentState: null,
-    currentAddress:null,
-    shopInMyCity:null,
-    itemsInMyCity:null,
-    cartItems:[],
-    totalAmount:0
+    currentAddress: null,
+    shopInMyCity: null,
+    itemsInMyCity: null,
+    myOrders:[],
+    // FIX: Load from localStorage on initialization
+    cartItems: JSON.parse(localStorage.getItem("cart")) || [],
+    totalAmount: JSON.parse(localStorage.getItem("total")) || 0
   },
   reducers: {
     setUserData: (state, action) => {
@@ -32,35 +35,71 @@ const userSlice = createSlice({
       state.itemsInMyCity = action.payload;
     },
     addToCart: (state, action) => {
-      const cartItem=action.payload
-      const existingItem=state.cartItems.find(i=>i.id==cartItem.id)
-      if(existingItem){
-        existingItem.quantity+=cartItem.quantity
-      } else{
-        state.cartItems.push(cartItem)
+      const cartItem = action.payload;
+      const existingItem = state.cartItems.find(i => i.id == cartItem.id);
+      if (existingItem) {
+        existingItem.quantity += cartItem.quantity;
+      } else {
+        state.cartItems.push(cartItem);
       }
-      // console.log(state.cartItems)
-      state.totalAmount=state.cartItems.reduce((sum,i)=>sum+i.price*i.quantity,0)
-    },
-    updateQuantity:(state,action)=>{
-      const {id,quantity}=action.payload
-      const item=state.cartItems.find(i=>i.id==id)
-      if(item){
-        item.quantity=quantity
-      }
-     state.totalAmount=state.cartItems.reduce((sum,i)=>sum+i.price*i.quantity,0)
-    },
-    removeCartItem:(state,action)=>{
-      state.cartItems=state.cartItems.filter(i=>i.id!==action.payload)
-      state.totalAmount=state.cartItems.reduce((sum,i)=>sum+i.price*i.quantity,0) 
-      },
+      state.totalAmount = state.cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
       
+      // Save to LocalStorage
+      localStorage.setItem("cart", JSON.stringify(state.cartItems));
+      localStorage.setItem("total", JSON.stringify(state.totalAmount));
+    },
+    updateQuantity: (state, action) => {
+      const { id, quantity } = action.payload;
+      const item = state.cartItems.find(i => i.id == id);
+      if (item) {
+        item.quantity = quantity;
+      }
+      state.totalAmount = state.cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+      
+      // Update LocalStorage
+      localStorage.setItem("cart", JSON.stringify(state.cartItems));
+      localStorage.setItem("total", JSON.stringify(state.totalAmount));
+    },
+    removeCartItem: (state, action) => {
+      state.cartItems = state.cartItems.filter(i => i.id !== action.payload);
+      state.totalAmount = state.cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0); 
+      
+      // Update LocalStorage
+      localStorage.setItem("cart", JSON.stringify(state.cartItems));
+      localStorage.setItem("total", JSON.stringify(state.totalAmount));
+    },
+    // Naya reducer: Order success hone par cart khali karne ke liye
+    clearCart: (state) => {
+      state.cartItems = [];
+      state.totalAmount = 0;
+      localStorage.removeItem("cart");
+      localStorage.removeItem("total");
+    },
     clearUserData: (state) => {
       state.userData = null;
-      state.currentCity = "Modinagar"; // Logout par default city set kar di
+      state.currentCity = "Modinagar"; 
     },
+    setMyOrders:(state,action)=>{
+      state.myOrders=action.payload
+    },
+    addMyOrder:(state,action)=>{
+      state.myOrders=[action.payload,...state.myOrders]
+    }
   },
 });
 
-export const { setUserData, clearUserData, setCurrentCity, setCurrentState, setCurrentAddress, SetShopInMyCity, setItemsInMyCity, addToCart, updateQuantity, removeCartItem} = userSlice.actions;
+export const { 
+  setUserData, 
+  clearUserData, 
+  setCurrentCity, 
+  setCurrentState, 
+  setCurrentAddress, 
+  SetShopInMyCity, 
+  setItemsInMyCity, 
+  addToCart, 
+  updateQuantity, 
+  removeCartItem,
+  clearCart,setMyOrders,addMyOrder // Export naya action
+} = userSlice.actions;
+
 export default userSlice.reducer;
