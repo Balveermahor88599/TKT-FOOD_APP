@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-// import { set } from "mongoose";
 
 const userSlice = createSlice({
   name: "user",
@@ -10,8 +9,7 @@ const userSlice = createSlice({
     currentAddress: null,
     shopInMyCity: null,
     itemsInMyCity: null,
-    myOrders:[],
-    // FIX: Load from localStorage on initialization
+    myOrders: [],
     cartItems: JSON.parse(localStorage.getItem("cart")) || [],
     totalAmount: JSON.parse(localStorage.getItem("total")) || 0
   },
@@ -43,8 +41,6 @@ const userSlice = createSlice({
         state.cartItems.push(cartItem);
       }
       state.totalAmount = state.cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
-      
-      // Save to LocalStorage
       localStorage.setItem("cart", JSON.stringify(state.cartItems));
       localStorage.setItem("total", JSON.stringify(state.totalAmount));
     },
@@ -55,20 +51,15 @@ const userSlice = createSlice({
         item.quantity = quantity;
       }
       state.totalAmount = state.cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
-      
-      // Update LocalStorage
       localStorage.setItem("cart", JSON.stringify(state.cartItems));
       localStorage.setItem("total", JSON.stringify(state.totalAmount));
     },
     removeCartItem: (state, action) => {
       state.cartItems = state.cartItems.filter(i => i.id !== action.payload);
       state.totalAmount = state.cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0); 
-      
-      // Update LocalStorage
       localStorage.setItem("cart", JSON.stringify(state.cartItems));
       localStorage.setItem("total", JSON.stringify(state.totalAmount));
     },
-    // Naya reducer: Order success hone par cart khali karne ke liye
     clearCart: (state) => {
       state.cartItems = [];
       state.totalAmount = 0;
@@ -79,11 +70,34 @@ const userSlice = createSlice({
       state.userData = null;
       state.currentCity = "Modinagar"; 
     },
-    setMyOrders:(state,action)=>{
-      state.myOrders=action.payload
+    setMyOrders: (state, action) => {
+      state.myOrders = action.payload;
     },
-    addMyOrder:(state,action)=>{
-      state.myOrders=[action.payload,...state.myOrders]
+    addMyOrder: (state, action) => {
+      state.myOrders = [action.payload, ...state.myOrders];
+    },
+
+    // --- NAYA REDUCER (Aapki Image ke logic par based) ---
+    updateOrderStatus: (state, action) => {
+      const { orderId, shopId, status } = action.payload;
+      
+      // 1. Pehle pura order dhoondo
+      const order = state.myOrders.find((o) => o._id === orderId);
+      
+      if (order) {
+        // 2. Phir us order ke andar specific shopOrder dhoondo (Owner perspective)
+        const specificShopOrder = order.shopOrders.find(
+          (so) => (so.shop?._id || so.shop) === shopId
+        );
+        
+        if (specificShopOrder) {
+          // 3. Status update kar do
+          specificShopOrder.status = status;
+          
+          // Note: Agar global order status bhi change karna hai toh yahan kar sakte hain
+          order.status = status; 
+        }
+      }
     }
   },
 });
@@ -99,7 +113,10 @@ export const {
   addToCart, 
   updateQuantity, 
   removeCartItem,
-  clearCart,setMyOrders,addMyOrder // Export naya action
+  clearCart, 
+  setMyOrders, 
+  addMyOrder,
+  updateOrderStatus // Export kiya gaya naya action
 } = userSlice.actions;
 
 export default userSlice.reducer;

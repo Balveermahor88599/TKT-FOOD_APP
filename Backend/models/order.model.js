@@ -8,21 +8,31 @@ const shopOrderItemSchema = new mongoose.Schema({
     name: String,
     price: Number,
     quantity: Number
-}, { timestamps: true }); // Fixed spelling
+}, { timestamps: true });
 
 const shopOrderSchema = new mongoose.Schema({
     shop: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Shop"
     },
-    owner: { // Fixed: Capital 'O' to small 'o'
+    owner: { 
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
     },
-    subtotal: Number, // Fixed: Capital 'T' to small 't' to match controller
+    subtotal: Number,
     shopOrderItems: [shopOrderItemSchema],
-
-}, { timestamps: true });
+    // FIX: Har shop ka apna status hona zaroori hai
+    status: {
+        type: String,
+        enum: ["pending", "preparing", "out of delivery", "delivered", "cancelled"],
+        default: "pending"
+    },
+    assignment: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "DeliveryAssignment",
+            default: null
+        },
+}, { timestamps: true }); 
 
 const orderSchema = new mongoose.Schema({
     user: {
@@ -43,12 +53,13 @@ const orderSchema = new mongoose.Schema({
         type: Number
     },
     shopOrders: [shopOrderSchema],
-    status:{
-        type:String,
-        enum:["pending","preparing","out of delivery","delivered"],
-        default:"pending"
+    // Global Status (Customer ke liye)
+    status: {
+        type: String,
+        enum: ["pending", "preparing", "out of delivery", "delivered", "cancelled"],
+        default: "pending"
     }
-}, { timestamps: true }); // Fixed: plural 'timestamps'
+}, { timestamps: true });
 
 const Order = mongoose.model("Order", orderSchema);
 export default Order;

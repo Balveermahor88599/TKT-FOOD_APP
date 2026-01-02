@@ -9,7 +9,6 @@ const userSchema = new mongoose.Schema(
       minlength: 3,
       maxlength: 50,
     },
-
     email: {
       type: String,
       required: [true, "Email is required"],
@@ -18,14 +17,12 @@ const userSchema = new mongoose.Schema(
       trim: true,
       match: [/^\S+@\S+\.\S+$/, "Please use a valid email address"],
     },
-
     password: {
       type: String,
       required: [true, "Password is required"],
       minlength: 6,
-      select: false, // 🔐 password query me by default nahi aayega
+      select: false,
     },
-
     mobile: {
       type: String,
       required: [false, "Mobile number is required"],
@@ -33,12 +30,24 @@ const userSchema = new mongoose.Schema(
       maxlength: 10,
       match: [/^[0-9]{10}$/, "Please enter a valid 10-digit mobile number"],
     },
-
     role: {
       type: String,
       enum: ["user", "owner", "deliveryBoy"],
       default: "user",
       required: true,
+    },
+    // GeoJSON Point Structure
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      // Spelling fixed: 'coordinates'
+      coordinates: {
+        type: [Number],
+        default: [0, 0], // [longitude, latitude]
+      },
     },
   },
   {
@@ -46,6 +55,8 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-const User = mongoose.model("User", userSchema);
+// Indexing for geospatial queries like $near or $geoWithin
+userSchema.index({ location: "2dsphere" });
 
+const User = mongoose.model("User", userSchema);
 export default User;

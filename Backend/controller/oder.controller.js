@@ -100,20 +100,23 @@ export const getMyOrders = async (req, res) => {
     }
 };
 
-// order.controller.js
+
 export const updateOrderStatus = async (req, res) => {
     try {
         const { orderId } = req.params;
-        const { status } = req.body; // Example: "Accepted", "Preparing", "Delivered"
+        const { status, shopId } = req.body; // ShopId bhi bhejna zaroori hai
 
-        const updatedOrder = await Order.findByIdAndUpdate(
-            orderId,
-            { status },
+        // Hamein Order ke andar us specific shop ka status update karna hai
+        const updatedOrder = await Order.findOneAndUpdate(
+            { _id: orderId, "shopOrders.shop": shopId },
+            { 
+                $set: { "shopOrders.$.status": status } 
+            },
             { new: true }
-        ).populate("user", "Fullname mobile");
+        );
 
         if (!updatedOrder) {
-            return res.status(404).json({ success: false, message: "Order not found" });
+            return res.status(404).json({ success: false, message: "Order or Shop not found" });
         }
 
         return res.status(200).json({ 

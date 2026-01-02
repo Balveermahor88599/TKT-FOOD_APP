@@ -28,7 +28,7 @@ app.use(cookieParser());
 app.use("/api/auth", router);
 app.use("/api/user", userRouter);
 app.use("/api/shop", shopRouter);
-
+app.use("/api/item", itemRouter);
 app.use("/api/order",orderRouter);
 // index.js (Routes se theek upar)
 // index.js
@@ -40,7 +40,7 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use("/api/item", itemRouter);
+
 
 // start server only after DB connection
 const startServer = async () => {
